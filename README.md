@@ -39,7 +39,7 @@ flowchart TD
     HITL -->|Yes| Review[Show Draft in Chat]
     Review -->|Feedback| Think
     Review -->|Approved| Tool[Execute Send Tool]
-    HITL -->|No| Tool
+    HITL -->|No| Exit[Exit]
     Tool --> SMTP[Connect -> Attach -> Dispatch]
     SMTP --> Success([Success Notification])
 ```
