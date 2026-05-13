@@ -9,7 +9,7 @@ PROVIDERS = {
     "Sarvam AI": {
         "base_url": "https://api.sarvam.ai/v1",
         "default_model": "sarvam-105b",
-        "env_var": "sk_w09osx2v_SR1UlAUpzvt8K86aPl0YfZlT",
+        "env_var": "SARVAM_API_KEY",
         "description": "Sarvam 105B via OpenAI compat layer"
     },
     "OpenAI": {
