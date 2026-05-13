@@ -1,102 +1,107 @@
-# 📧 Intelligent Email Automation Agent
+# 📧 Intelligent Conversational Email Agent
 
-A sophisticated, conversational AI agent built with **LangGraph** and **Streamlit** that handles everything from general chat to bulk email outreach. Powered by the **Sarvam AI LLM** (or any OpenAI-compatible provider), this agent intelligently reads your data, drafts personalized messages, and sends them with physical attachments.
-
----
-
-## 🌟 Key Features
-
-- **💬 Conversational ReAct Agent:** Talk to the agent naturally. Ask questions about your data, request summaries, or instruct it to start email campaigns.
-- **📊 Bulk Data Processing:** Upload CSV, Excel, PDF, or TXT files. The agent reads and understands the context (e.g., a list of professor contacts or a research paper).
-- **📎 Multi-File Attachments:** Separate uploaders for "Target Data" (context) and "Email Attachments" (files physically sent with emails).
-- **🚀 Speed Optimized:** Uses a custom `send_bulk_emails` tool that manages a single SMTP connection for multiple recipients, making dispatch vastly faster.
-- **💾 Persistent Memory:** Integrated SQLite database (`chat_memory.db`) ensures the agent remembers your instructions and history across sessions.
-- **🛡️ Human-In-The-Loop (HITL):** A safety toggle that forces the agent to show you every draft for approval in chat before sending.
-- **🔌 Swappable LLMs:** Easily switch between Sarvam AI, OpenAI, or custom local models (Ollama/vLLM) via the UI.
+A professional-grade, AI-driven automation suite designed to streamline high-volume outreach and personalized communication. This agent leverages the state-of-the-art **ReAct (Reasoning and Acting)** architecture via **LangGraph**, providing a flexible chatbot interface that can read complex data and execute email tasks autonomously.
 
 ---
 
-## 🔄 Agent Workflow
+## 🌟 Core Capabilities
+
+- **🧠 Advanced Reasoning:** Unlike rigid templates, the agent understands *intent*. It can summarize research papers, extract contact details from messy CSVs, and draft context-aware emails.
+- **💬 Conversational Interface:** A unified chat window powered by **Streamlit**. Talk to the agent like a human assistant to refine drafts or ask questions about your data.
+- **📦 Smart Bulk Dispatch:** Upload a list of 100 contacts; the agent can draft personalized messages for all of them and send them in one high-speed batch using optimized SMTP.
+- **💾 Long-Term Memory:** Uses a local **SQLite database** to store conversation checkpoints. If you close the app and come back, the agent remembers exactly where you were.
+- **🛡️ Multi-Layer Safety:** 
+    - **HITL (Human-In-The-Loop):** A switchable guardrail that forces the agent to get your approval in chat before any email leaves your inbox.
+    - **Secure Credential Handling:** Passwords and API keys are stored only in memory during the session and are never logged or saved to the database.
+
+---
+
+## 🔄 How the Agent Works (Workflow)
+
+The agent operates in a **Perception-Reasoning-Action** loop. When you send a message, the following happens:
+
+1. **Context Loading:** The agent injects the text from your uploaded "Target Data" files into its current thought process.
+2. **Decision Making:** The LLM decides whether it can answer you directly (Chat) or if it needs to use a Tool (Send Email).
+3. **Drafting:** If sending an email, it drafts the content based on your instructions and data context.
+4. **Approval Loop:** If HITL is enabled, it pauses and shows you the draft. You can chat back to "Refine" it or click "Approve".
+5. **Execution:** Once approved, it triggers the SMTP tool, physically attaches your "Email Attachment" files, and sends the mail.
+
+### Workflow Diagram
+*(Fixed for compatibility)*
 
 ```mermaid
-graph TD
-    A[User Input / Files] --> B{Agent Decision}
-    B -- General Chat --> C[Assistant Response]
-    B -- Needs Context --> D[Read Target Data / Files]
-    D --> B
-    B -- Send Email --> E{HITL Enabled?}
-    E -- Yes --> F[Show Draft to User]
-    F -- User Approves --> G[Execute send_email Tool]
-    F -- User Edits --> D
-    E -- No --> G
-    B -- Bulk Outreach --> H[Execute send_bulk_emails Tool]
-    G --> I[SMTP: Connect -> Login -> Attach -> Send]
-    H --> I
-    I --> J[Success Notification]
+flowchart TD
+    Start([User Input]) --> Think{LLM Thinks}
+    Think -->|General Chat| Respond[Assistant Response]
+    Think -->|Read Files| Context[Parse Data Context]
+    Context --> Think
+    Think -->|Draft Email| HITL{HITL ON?}
+    HITL -->|Yes| Review[Show Draft in Chat]
+    Review -->|Feedback| Think
+    Review -->|Approved| Tool[Execute Send Tool]
+    HITL -->|No| Tool
+    Tool --> SMTP[Connect -> Attach -> Dispatch]
+    SMTP --> Success([Success Notification])
 ```
 
 ---
 
-## 🛠️ Installation & Setup
+## 📧 Critical Step: Getting your Gmail App Password
 
-1. **Clone the repository** and navigate to the `Email_Agent` folder.
-2. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **Launch the Application:**
-   ```bash
-   python -m streamlit run app_email.py
-   ```
+The agent uses **Standard SMTP** to communicate with Gmail servers. For security, Google blocks regular passwords. You **must** follow these exact steps to get a unique 16-character code:
 
----
-
-## 📧 How to get your Gmail App Password
-
-The agent uses **SMTP** to send emails. For Gmail, you cannot use your regular password. You **must** create an "App Password":
-
-1. Go to your [Google Account Security Settings](https://myaccount.google.com/security).
-2. Ensure **2-Step Verification** is turned **ON**.
-3. Search for **"App Passwords"** in the top search bar.
-4. Name it (e.g., "Email Agent") and click **Create**.
-5. **Copy the 16-character code** (e.g., `xxxx xxxx xxxx xxxx`).
-6. Paste this code into the **App Password** field in the Sidebar of the app.
+1.  **Open Google Account:** Go to [myaccount.google.com](https://myaccount.google.com).
+2.  **Enable 2FA:** Navigate to **Security** -> **2-Step Verification**. This must be **ON**.
+3.  **Find App Passwords:** Scroll to the bottom of the "2-Step Verification" page or search "App Passwords" in the top bar.
+4.  **Generate Code:**
+    - Choose a name (e.g., "My Email Agent").
+    - Click **Create**.
+5.  **Secure the Code:** A yellow box will appear with a **16-character code** (e.g., `abcd efgh ijkl mnop`). 
+6.  **Paste into Sidebar:** Copy this code (without spaces) and paste it into the **App Password** field in the agent's sidebar.
 
 ---
 
-## 📖 User Guide
+## 🛠️ Setup & Installation
 
-### 1. Configuration (Sidebar)
-- **LLM Provider:** Choose your engine. **Sarvam AI** is recommended for high-performance reasoning.
-- **API Key:** Paste your provider's API key.
-- **SMTP Credentials:** Enter your email and the 16-character **App Password**.
-- **HITL Toggle:** Keep this **ON** if you want to review emails before they are sent.
+### 1. Requirements
+- Python 3.9+
+- An API Key from [Sarvam AI](https://dashboard.sarvam.ai/) or OpenAI.
 
-### 2. Context & Attachments (Sidebar)
-- **Target Data:** Upload lists of contacts or context docs (Agent reads these).
-- **Email Attachments:** Upload files you want physically sent to recipients.
+### 2. Installation
+```bash
+# Clone the repository
+cd Email_Agent
 
-### 3. Interaction (Main Chat)
-- **General Task:** *"How are you?"* or *"What is in the CSV I uploaded?"*
-- **Drafting:** *"Draft a professional follow-up for the professors in the list."*
-- **Sending:** *"Send the email to nikhil@example.com using the attached paper."*
-- **Refinement:** *"Make the tone more casual and mention my B.Tech degree."*
+# Install dependencies
+pip install -r requirements.txt
+```
 
----
-
-## 🗂️ Technical Architecture
-
-- **Orchestration:** `LangGraph` (ReAct Agent architecture).
-- **Language Model:** `langchain-openai` (OpenAI-compatible wrapper).
-- **Interface:** `Streamlit` (Interactive web UI).
-- **Parsing:** `Pandas` (CSVs/Excel), `PyPDF2` (PDFs).
-- **Communication:** `smtplib` (Python Standard Library).
-- **Storage:** `SqliteSaver` (Persistent checkpointing).
+### 3. Run the Agent
+```bash
+python -m streamlit run app_email.py
+```
 
 ---
 
-## ⚙️ Configuration File (`config.py`)
-To add a new LLM provider, simply update the `PROVIDERS` dictionary in `Email_Agent/config.py`. The UI will automatically detect the new option!
+## 📖 Detailed User Guide
+
+### 📂 Upload Section (Sidebar)
+The sidebar contains two distinct, optional upload areas:
+- **1. Target Data & Context:** Upload your lists (CSV/XLSX), research papers (PDF), or instructions (TXT). The agent **reads** these to understand who to email and what to say. It **does not** attach these to emails.
+- **2. Email Attachments:** Upload the actual files (Resume, Portfolio, etc.) that you want the recipient to receive. These are **physically attached** to every email the agent sends.
+
+### 💬 Chat commands (Examples)
+- **Batch Outreach:** *"I've uploaded a CSV of 50 professors. Draft a short inquiry for each based on their research area mentioned in the 'Interest' column, then show me the first one."*
+- **Refinement:** *"The draft looks good, but please mention my interest in Side-Channel Analysis more specifically."*
+- **Single Send:** *"Send a quick thank-you note to nikhil@example.com."*
 
 ---
-*Created with ❤️ for efficient academic and professional outreach.*
+
+## ⚙️ Technical Stack
+- **Framework:** [LangGraph](https://langchain-ai.github.io/langgraph/) (Stateful orchestration).
+- **LLM Interface:** [LangChain-OpenAI](https://python.langchain.com/docs/integrations/chat/openai/).
+- **Parsing:** `Pandas` (Tabular data), `PyPDF2` (Document extraction).
+- **Speed:** Batch processing via `smtplib` connection pooling.
+
+---
+*Developed for advanced professional and academic automation.*
